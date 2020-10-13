@@ -10,6 +10,8 @@ public class Creature : MonoBehaviour
     public float m_mspd;
 
     public Collider2D m_basicAttackCollider;
+    public Transform m_feetTransform;
+    public LayerMask groundLayer;
     protected Vector2 m_movement;
 
     protected Animator m_animator;
@@ -21,7 +23,7 @@ public class Creature : MonoBehaviour
 
     private AnimationClip[] m_animationClips;
     private float m_blinkStartTime;
-    private float m_speedModifier = 1f;
+    private float m_speedModifier = 1;
     private const float m_blinkDuration = 250;
 
     virtual protected void Start()
@@ -120,6 +122,11 @@ public class Creature : MonoBehaviour
         return Util.GetTimeMillis() > m_attackEnd && !IsStunned();
     }
 
+    virtual protected bool CanJump()
+    {
+        return IsOnGround() && !IsStunned() && !IsRooted();
+    }
+
     virtual protected bool CanWalk()
     {
         return GetSpeed() > 0  && !IsStunned() && !IsRooted();
@@ -135,11 +142,18 @@ public class Creature : MonoBehaviour
         return Util.GetTimeMillis() <= m_stunEnd;
     }
 
-    virtual protected void OnWalk(float h, float v) 
+    public bool IsOnGround()
+    {
+        Collider2D colliders = Physics2D.OverlapCircle(m_feetTransform.position, 1.01f, groundLayer);
+        return colliders != null;
+    }
+
+    virtual protected void OnWalk(float h) 
     {
         if (h != 0.0f)
             FlipCreature(h < 0);
 
+        float v =  m_movement.y;
         m_animator.SetBool("Walking", (h != 0 || v != 0));
         m_movement = new Vector2(h, v);
     }

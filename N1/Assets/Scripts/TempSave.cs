@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class TempSave : MonoBehaviour
 {
-    [SerializeField] SaveManager _saveManager;
+    [SerializeField] public SaveManager _saveManager;
 
     void Start()
     {

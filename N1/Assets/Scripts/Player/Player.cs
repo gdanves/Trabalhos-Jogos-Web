@@ -5,14 +5,14 @@ using UnityEngine;
 public class Player : Creature
 {
     // physics
-    protected Rigidbody2D m_rigidbody;
+    protected Rigidbody2D m_rb;
 
     // components
     private Transform m_camera;
 
     override protected void Start()
     {
-        m_rigidbody = GetComponent<Rigidbody2D>();
+        m_rb = GetComponent<Rigidbody2D>();
         m_camera = Camera.main.transform;
         base.Start();
     }
@@ -23,7 +23,7 @@ public class Player : Creature
             //m_gameManager.PauseGame();
 
         if(IsDead()) {
-            m_rigidbody.velocity *= 0f;
+            m_rb.velocity *= 0f;
             return;
         }
 
@@ -34,7 +34,7 @@ public class Player : Creature
  
         base.Update();
 
-        m_rigidbody.velocity = (m_movement * GetSpeedFactor()) + m_pushMovement;
+        //m_rb.velocity = (m_movement * GetSpeedFactor()) + m_pushMovement;
 
         // camera follow
         m_camera.position = new Vector3(transform.position.x, transform.position.y, m_camera.position.z);
@@ -45,15 +45,16 @@ public class Player : Creature
         base.FixedUpdate();
     }
 
-    override protected void OnWalk(float h, float v)
+    override protected void OnWalk(float h)
     {
-        base.OnWalk(h, v);
+        base.OnWalk(h);
     }
 
     private void Walk()
     {
         float h = Input.GetAxisRaw("Horizontal");
-        float v = Input.GetAxisRaw("Vertical");
-        OnWalk(h, v);
+        // vertical movement is currently not used
+        //float v = Input.GetAxisRaw("Vertical");
+        OnWalk(h);
     }
 }
