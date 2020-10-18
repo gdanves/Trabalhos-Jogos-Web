@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Player : Creature
 {
@@ -8,19 +9,29 @@ public class Player : Creature
     protected Rigidbody2D m_rb;
 
     // components
+    [SerializeField] public SaveManager _saveManager;
+    public List<Transform> checkpointPositions;
     private Transform m_camera;
 
-    override protected void Start()
+    private bool m_hasKey = false;
+
+    protected override void Start()
     {
         m_rb = GetComponent<Rigidbody2D>();
         m_camera = Camera.main.transform;
         base.Start();
+
+        if(_saveManager) {
+            int checkpoint = _saveManager.GetCheckpoint();
+            if(checkpoint > 0)
+                transform.position = checkpointPositions[checkpoint - 1].position;
+        }
     }
 
-    override protected void Update()
+    protected override void Update()
     {
-        //if(Input.GetButtonUp("Cancel"))
-            //m_gameManager.PauseGame();
+        if(Input.GetButtonUp("Cancel"))
+            m_gameManager.PauseGame();
 
         if(IsDead()) {
             m_rb.velocity *= 0f;
@@ -40,12 +51,43 @@ public class Player : Creature
         m_camera.position = new Vector3(transform.position.x, transform.position.y, m_camera.position.z);
     }
 
-    override protected void FixedUpdate()
+    protected override void FixedUpdate()
     {
         base.FixedUpdate();
     }
 
-    override protected void OnWalk(float h)
+    public void Hit(int value)
+    {
+        if (IsDead())
+            return;
+
+        if (m_animator.GetCurrentAnimatorStateInfo(0).IsName("Idle") || m_animator.GetCurrentAnimatorStateInfo(0).IsName("Walk"))
+            m_animator.Play("Hit");
+
+        StartBlink();
+        AddStun(300);
+        AddHealth(-value);
+        m_gameManager.SetHealthPercent(Mathf.Clamp(GetHealth().x/GetHealth().y, 0, 1));
+    }
+
+    public bool HasKey()
+    {
+        return m_hasKey;
+    }
+
+    public void OnCollectKey()
+    {
+        m_hasKey = true;
+    }
+
+    protected override void Die()
+    {
+        m_animator.Play("Death");
+        Time.timeScale = 0.35f;
+        Invoke("EndGame", 0.7f);
+    }
+
+    protected override void OnWalk(float h)
     {
         base.OnWalk(h);
     }
@@ -56,5 +98,10 @@ public class Player : Creature
         // vertical movement is currently not used
         //float v = Input.GetAxisRaw("Vertical");
         OnWalk(h);
+    }
+
+    private void EndGame()
+    {
+        m_gameManager.EndGame();
     }
 }

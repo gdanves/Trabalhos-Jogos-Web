@@ -7,9 +7,18 @@ public class SaveManager : ScriptableObject
 {
     [SerializeField] int _checkpoint;
 
-    public int GetCheckpoint() => _checkpoint;
+    public void SetCheckpoint(int checkpoint)
+    {
+        if(checkpoint > _checkpoint)
+            _checkpoint = checkpoint;
+    }
 
-    public int AddCheckpoint() => ++_checkpoint;
+    public void ResetCheckpoint()
+    {
+        _checkpoint = 0;
+    }
+
+    public int GetCheckpoint() => _checkpoint;
 
     public void LoadData()
     {

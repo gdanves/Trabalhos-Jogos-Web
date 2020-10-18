@@ -10,13 +10,12 @@ public class Creature : MonoBehaviour
     public float m_mspd;
 
     public Collider2D m_basicAttackCollider;
-    public Transform m_feetTransform;
-    public LayerMask groundLayer;
+    public Collider2D m_edgeCollider;
     protected Vector2 m_movement;
 
     protected Animator m_animator;
     protected SpriteRenderer m_spriteRenderer;
-    //protected GameManager m_gameManager;
+    protected GameManager m_gameManager;
 
     protected float m_attackEnd = 0, m_rootEnd = 0, m_stunEnd = 0;
     protected Vector2 m_pushMovement = new Vector2(0, 0);
@@ -24,18 +23,21 @@ public class Creature : MonoBehaviour
     private AnimationClip[] m_animationClips;
     private float m_blinkStartTime;
     private float m_speedModifier = 1;
+    protected bool m_grounded = false;
+    protected LayerMask m_groundLayer;
     private const float m_blinkDuration = 250;
 
-    virtual protected void Start()
+    protected virtual void Start()
     {
         m_animator = GetComponent<Animator>();
         m_animationClips = m_animator.runtimeAnimatorController.animationClips;
         m_spriteRenderer = GetComponent<SpriteRenderer>();
-        //m_gameManager = FindObjectOfType<GameManager>();
+        m_groundLayer = LayerMask.NameToLayer("Ground");
+        m_gameManager = FindObjectOfType<GameManager>();
     }
 
-    virtual protected void Update() { }
-    virtual protected void FixedUpdate() { }
+    protected virtual void Update() { }
+    protected virtual void FixedUpdate() { }
 
     public float GetAnimationTime(string name)
     {
@@ -53,9 +55,9 @@ public class Creature : MonoBehaviour
         m_speedModifier -= modifier;
     }
 
-    virtual protected void Die() { }
+    protected virtual void Die() { }
 
-    virtual protected void StopWalk()
+    protected virtual void StopWalk()
     {
         m_animator.SetBool("Walking", false);
         m_movement *= 0f;
@@ -117,38 +119,37 @@ public class Creature : MonoBehaviour
         return m_health.x == 0;
     }
 
-    virtual protected bool CanAttack()
+    protected virtual bool CanAttack()
     {
         return Util.GetTimeMillis() > m_attackEnd && !IsStunned();
     }
 
-    virtual protected bool CanJump()
+    protected virtual bool CanJump()
     {
         return IsOnGround() && !IsStunned() && !IsRooted();
     }
 
-    virtual protected bool CanWalk()
+    protected virtual bool CanWalk()
     {
         return GetSpeed() > 0  && !IsStunned() && !IsRooted();
     }
 
-    virtual protected bool IsRooted()
+    protected virtual bool IsRooted()
     {
         return Util.GetTimeMillis() <= m_rootEnd;
     }
 
-    virtual protected bool IsStunned()
+    protected virtual bool IsStunned()
     {
         return Util.GetTimeMillis() <= m_stunEnd;
     }
 
     public bool IsOnGround()
     {
-        Collider2D colliders = Physics2D.OverlapCircle(m_feetTransform.position, 1.01f, groundLayer);
-        return colliders != null;
+        return m_grounded;
     }
 
-    virtual protected void OnWalk(float h) 
+    protected virtual void OnWalk(float h) 
     {
         if (h != 0.0f)
             FlipCreature(h < 0);
@@ -163,9 +164,12 @@ public class Creature : MonoBehaviour
     {
         m_spriteRenderer.flipX = flip;
 
-        // we should flip the attack collider too
-        if((flip && m_basicAttackCollider.offset.x > 0) || (!flip && m_basicAttackCollider.offset.x < 0))
+        // we should flip the colliders too
+        if((flip && m_basicAttackCollider.offset.x > 0) || (!flip && m_basicAttackCollider.offset.x < 0)) {
             m_basicAttackCollider.offset = new Vector2(m_basicAttackCollider.offset.x * -1, m_basicAttackCollider.offset.y);
+            if(m_edgeCollider)
+                m_edgeCollider.offset = new Vector2(m_edgeCollider.offset.x * -1, m_edgeCollider.offset.y);
+        }
     }
 
     protected void StartBlink()
@@ -192,5 +196,17 @@ public class Creature : MonoBehaviour
         }
 
         m_spriteRenderer.material.SetFloat("_FlashAmount", 0f);
+    }
+
+    protected virtual void OnCollisionStay2D(Collision2D collision)
+    {
+        if(collision.gameObject.layer == m_groundLayer)
+            m_grounded = true;
+    }
+
+    protected virtual void OnCollisionExit2D(Collision2D other)
+    {
+        if(other.gameObject.layer == m_groundLayer)
+            m_grounded = false;
     }
 }

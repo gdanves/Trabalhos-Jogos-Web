@@ -4,17 +4,12 @@ using UnityEngine;
 
 public class Knight : Player
 {
-    const float fallMultiplier = 1.5f;
-
-    override protected void Start ()
+    protected override void Start ()
     {
         base.Start();
- 
-        // set stats
-        SetMaxHealth(100);
     }
 
-    override protected void Update ()
+    protected override void Update ()
     {
         if(IsDead()) {
             base.Update();
@@ -32,8 +27,20 @@ public class Knight : Player
 
         base.Update();
 
-        float speedMod = m_animator.GetCurrentAnimatorStateInfo(0).IsName("Roll") ? 6f : 3f;
+        float speedMod = !IsOnGround() ? m_mspd * 1.5f : m_mspd;
         m_rb.velocity = m_movement * speedMod + m_pushMovement;
+    }
+
+    protected override void OnCollisionStay2D(Collision2D collision)
+    {
+        if(collision.gameObject.layer == m_groundLayer || collision.gameObject.tag == "Enemy")
+            m_grounded = true;
+    }
+
+    protected override void OnCollisionExit2D(Collision2D collision)
+    {
+        if(collision.gameObject.layer == m_groundLayer || collision.gameObject.tag == "Enemy")
+            m_grounded = false;
     }
 
     private void Attack()
@@ -48,25 +55,24 @@ public class Knight : Player
 
     private void Jump()
     {
-        m_movement.y = 5f;
-        //m_animator.Play("Attack_sword");
+        m_movement.y = 3.5f;
     }
 
     private void UpdateJump()
     {
-        if(m_movement.y < 0)
-            m_movement += Vector2.up * Physics2D.gravity * fallMultiplier * Time.deltaTime;
-        else if(m_movement.y > 0)
+        if(m_movement.y > 0)
+            m_movement += Vector2.up * Physics2D.gravity * Time.deltaTime;
+        else if(m_movement.y < 0 || !IsOnGround())
             m_movement += Vector2.up * Physics2D.gravity * Time.deltaTime;
     }
 
     private void UseBasicAttack()
     {
         Collider2D[] enemys = new Collider2D[99];
-        int count = GetCreaturesInOverlap(m_basicAttackCollider, enemys);
-        for (int i = 0; i <= count -1; i++) {
-            Collider2D enemyCol = enemys[i];
-            // TODO
+        GetCreaturesInOverlap(m_basicAttackCollider, enemys);
+        foreach(Collider2D enemyCol in enemys) {
+            if(enemyCol && !enemyCol.isTrigger && enemyCol.gameObject.CompareTag("Enemy"))
+                enemyCol.GetComponent<Monster>().Hit(1);
         }
     }
 }
