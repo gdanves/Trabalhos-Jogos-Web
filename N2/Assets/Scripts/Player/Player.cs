@@ -11,6 +11,7 @@ public class Player : Creature
     // components
     [SerializeField] public SaveManager _saveManager;
     public List<Transform> checkpointPositions;
+    protected AudioSource m_audioSource;
     private Transform m_camera;
 
     private bool m_hasKey = false;
@@ -18,6 +19,7 @@ public class Player : Creature
     protected override void Start()
     {
         m_rb = GetComponent<Rigidbody2D>();
+        m_audioSource = GetComponent<AudioSource>();
         m_camera = Camera.main.transform;
         base.Start();
 

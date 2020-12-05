@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class Knight : Player
 {
+    // sounds
+    public List<AudioClip> m_sfxAtk;
+    public AudioClip m_sfxJump;
+
     protected override void Start ()
     {
         base.Start();
@@ -49,6 +53,7 @@ public class Knight : Player
         if(IsOnGround())
             AddRoot(300);
         m_animator.Play("Attack_sword");
+        m_audioSource.PlayOneShot(m_sfxAtk[Random.Range(0, m_sfxAtk.Count)]);
         // delay to make it more realistic, based on the animation
         Invoke("UseBasicAttack", 0.1f);
     }
@@ -56,6 +61,7 @@ public class Knight : Player
     private void Jump()
     {
         m_movement.y = 3.5f;
+        m_audioSource.PlayOneShot(m_sfxJump, 0.5f);
     }
 
     private void UpdateJump()

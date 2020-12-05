@@ -3,7 +3,16 @@ guid: a3346cec13ea7ac7fb502d3b1f655dac
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - _saveManager: {fileID: 11400000, guid: efbde0351c0f4820f93dbc53c8e5563b, type: 2}
+  - m_canvasIngame: {instanceID: 0}
+  - m_menuIngame: {instanceID: 0}
+  - m_menuEnd: {instanceID: 0}
+  - m_menuMain: {instanceID: 0}
+  - m_menuEndText: {instanceID: 0}
+  - m_healthSlider: {instanceID: 0}
+  - m_sfxWon: {instanceID: 0}
+  - m_sfxLost: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

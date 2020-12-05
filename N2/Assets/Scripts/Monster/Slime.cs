@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Slime : Monster
 {
+    public AudioClip m_sfxAtk;
     public Key m_keyPrefab;
 
     // Start is called before the first frame update
@@ -83,6 +84,7 @@ public class Slime : Monster
     	if(IsDead() || !m_animator.GetCurrentAnimatorStateInfo(0).IsName("Attack_basic") )
             return;
 
+        m_audioSource.PlayOneShot(m_sfxAtk, 7.5f);
         Collider2D[] players = new Collider2D[99];
         GetCreaturesInOverlap(m_basicAttackCollider, players);
         foreach(Collider2D playerCol in players) {

@@ -17,8 +17,13 @@ public class GameManager : MonoBehaviour
     public Text m_menuEndText;
     public Slider m_healthSlider;
 
+    public AudioClip m_sfxWon;
+    public AudioClip m_sfxLost;
+    private AudioSource m_audioSource;
+
     void Awake()
     {
+        m_audioSource = GetComponent<AudioSource>();
         MakeSingleton();
     }
 
@@ -73,8 +78,14 @@ public class GameManager : MonoBehaviour
 
     public void EndGame(bool won = false)
     {
+        if(won) {
+            m_audioSource.PlayOneShot(m_sfxWon);
+            m_menuEndText.text = "You won! For now.\nEnd of the demo :)";
+        } else {
+            m_audioSource.PlayOneShot(m_sfxLost);
+            m_menuEndText.text = "You lost!\nTry again?";
+        }
         Time.timeScale = 0f;
-        m_menuEndText.text = won ? "You won! For now.\nEnd of the demo :)" : "You lost!\nTry again?";
         m_menuEnd.SetActive(true);
     }
 
